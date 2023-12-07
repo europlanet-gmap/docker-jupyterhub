@@ -1,16 +1,14 @@
 version: "3"
 
-name: gmap-jupyterhub
+name: jupyterhub
 
 services:
+
   jupyterhub:
-    # Extend from 'build' compose, where we define build/image
-    extends:
-      file: docker-compose.build.yml
-      service: hub
+    image: ${JUPYTERHUB_IMAGE:?"Define a JUPYTERHUB_IMAGE in .env file"}
 
     # Container name and start/restart parameters
-    container_name: gmap-jupyterhub
+    container_name: jupyterhub
     restart: always
     command: >
       jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
@@ -34,7 +32,7 @@ services:
       DOCKER_NETWORK_NAME: jupyterhub-network
 
       # JupyterHub will spawn this Notebook image for users
-      # NOTEBOOK_DEFAULT_IMAGE: ${NOTEBOOK_DEFAULT_IMAGE:-jupyterhub/singleuser}
+      NOTEBOOK_DEFAULT_IMAGE: ${NOTEBOOK_DEFAULT_IMAGE:-jupyterhub/singleuser}
 
       # This username will be a JupyterHub admin
       # JUPYTERHUB_ADMIN: gmap
