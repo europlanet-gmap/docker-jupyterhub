@@ -1,3 +1,24 @@
+# Developers documentation
+
+## Technical Overview
+
+Key components of this reference deployment are:
+
+- **Host**:
+  Runs the [JupyterHub components](https://jupyterhub.readthedocs.org/en/latest/getting-started.html#overview)
+  in a Docker container on the host.
+
+- **Spawner**:
+  Uses [DockerSpawner](https://github.com/jupyter/dockerspawner)
+  to spawn single-user Jupyter Notebook servers in separate Docker
+  containers on the same host.
+
+- **Authenticator**:
+  Support [Native Authenticator](https://github.com/jupyterhub/nativeauthenticator)
+  (any user is allowed to sign up)
+  and [OAuthenticator](https://github.com/jupyterhub/oauthenticator)
+  (for Github/Gitlab sign in).
+
 ## Customisation: Jupyter Notebook Image
 
 You can configure JupyterHub to spawn Notebook servers from any Docker image, as
