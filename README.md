@@ -38,14 +38,19 @@ This deployment uses Docker, via [Docker Compose](https://docs.docker.com/compos
 
 ## Run the default setup
 
-If we just want to run the JupyterHub with the default Notebook images,
-and using a local `./tmp` directory for binding volumes between Host/Jupyter,
-all we have to do is:
+To run the JupyterHub with the default Notebook images:
 
 1. [Pull Notebook images](#pull-notebook-images)
 2. [Run JupyterHub](#run-jupyterhub)
     - access the service in your browser
     - shutdown the service when done
+  
+
+> Per default, a `./tmp` directory will be created in your current working directory to provide
+> the necessary host-container directories structure for it to run properly.
+> Those directories can be properly defined in `env.notebook`.
+>
+> - For details on adjusting the settings, see [`docs/README.md`](docs/README.md).
 
 ### Pull Notebook images
 
