@@ -36,9 +36,6 @@ should just work.
 
 This deployment uses Docker, via [Docker Compose](https://docs.docker.com/compose/), for all the things.
 
-- Use [Docker's installation instructions](https://docs.docker.com/engine/installation/)
-   to set up Docker for your environment.
-
 ## Run the default setup
 
 If we just want to run the JupyterHub with the default Notebook images,
