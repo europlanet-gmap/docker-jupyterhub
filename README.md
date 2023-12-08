@@ -30,14 +30,6 @@ change the list of images in your deployment, any image base on the official
 [Jupyter Docker Stack images](https://jupyter-docker-stacks.readthedocs.io)
 should just work.
 
-> **Note:**
->
-> This deployment can attend the demands of small data laboratories and
-> research groups but would be inadequate for production environments
-> in terms of availability, scalability, or security.
-> For such scenarios, check the project
-> [zero-to-jupyterhub-k8s](https://github.com/jupyterhub/zero-to-jupyterhub-k8s).
-
 ## Prerequisites
 
 ### Docker
