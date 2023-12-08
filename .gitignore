@@ -1,3 +1,5 @@
+.DS_Store
+tmp/
 docker/secrets/*.env
 docker/config/userlist
-.DS_Store
+docker/config/jupyterhub-proxy.pid

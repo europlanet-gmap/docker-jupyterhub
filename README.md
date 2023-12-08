@@ -63,17 +63,32 @@ Key components of this reference deployment are:
 
 This deployment uses Docker, via [Docker Compose](https://docs.docker.com/compose/), for all the things.
 
-1. Use [Docker's installation instructions](https://docs.docker.com/engine/installation/)
+- Use [Docker's installation instructions](https://docs.docker.com/engine/installation/)
    to set up Docker for your environment.
 
-## Build the JupyterHub Docker image
+## Run the default setup
 
-1. Use [docker-compose](https://docs.docker.com/compose/reference/) to build
-   the JupyterHub Docker image:
+If we just want to run the JupyterHub with the default Notebook images,
+and using a local `./tmp` directory for binding volumes between Host/Jupyter,
+all we have to do is:
 
-   ```bash
-   docker-compose build
-   ```
+1. [Pull Notebook images](#pull-notebook-images)
+2. [Run JupyterHub](#run-jupyterhub)
+    - access the service in your browser
+    - shutdown the service when done
+
+### Pull Notebook images
+
+The Notebook (*aka*, singleuser) images available to the users should be
+available in disk beforehand.
+A convenience script, [`setup.sh`](setup.sh), is provided to simplify setting up
+the system.
+
+To pull the images defined here by default, just do:
+```bash
+# cd docker/
+./setup.sh --pull-notebook-images
+```
 
 ## Run JupyterHub
 
@@ -96,6 +111,40 @@ To bring down the JupyterHub container:
 ```bash
 docker-compose down
 ```
+
+## Build JupyterHub/Notebook images
+
+I invite you to read the details about building images (and other customizations)
+in [`docs/README.md`](docs/README.md).
+The short version is as follows.
+
+> Suppose you want to quickly deploy the service using the following images:
+> - `gmap/jupyter-isis:8.0.0`
+> - `jupyter/scipy-notebook`
+>
+> You *want* to guarantee all the images have the same `JUPYTERHUB_VERSION`
+> installed, this will guarantee hub-notebook fully compatible to each other.
+
+1. Use [docker-compose](https://docs.docker.com/compose/reference/) to build
+   the JupyterHub Docker image:
+
+   ```bash
+   docker-compose build
+   ```
+
+2. Create the list of image to be used (`imagelist`):
+
+   ```bash
+   echo "gmap/jupyter-isis:8.0.0" > imagelist
+   echo "jupyter/scipy-notebook" >> imagelist
+   ```
+
+3. Build the Notebook images from given `./imagelist`:
+   ```bash
+   ./setup.sh --build-notebook-images
+   ```
+
+Now, simply run the service as described in ["Run JupyterHub"](#run-jupyterhub).
 
 ---
 /.\

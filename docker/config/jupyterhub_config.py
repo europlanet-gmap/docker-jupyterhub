@@ -50,8 +50,8 @@ c.JupyterHub.spawner_class = custom_spawner.CustomDockerSpawner
 
 # c.DockerSpawner.image = os.environ["NOTEBOOK_DEFAULT_IMAGE"]
 _images = utils.read_txt('imagelist')
-if not _images:
-    _images = [ os.environ["NOTEBOOK_DEFAULT_IMAGE"] ]
+# if not _images:
+#     _images = [ os.environ["NOTEBOOK_DEFAULT_IMAGE"] ]
 c.DockerSpawner.allowed_images = _images
 
 # JupyterHub requires a single-user instance of the Notebook server, so we

@@ -1,17 +1,26 @@
 #!/usr/bin/env bash
 set -ue
 
+#
 # This script prepare the environment for running the Hub.
 # Preparation consists of:
 # - Pull-or-build JupyterHub (server) image
 # - Pull-or-build Notebook (client) images
+#
 
-HERE=$(pwd -P `dirname $BASH_SOURCE`)
+HERE=$(dirname `realpath "$0"`)
+
+SERVICE_IMAGE_LIST="${HERE}/config/imagelist"
+TOBUILD_IMAGE_LIST="imagelist"
 
 function pull_notebook_images() {
+    #
     # Pull images from file './config/imageslist'
-    FILE_IN="./config/imagelist"
-    for image in `grep -E -v "^$|#" $FILE_IN`
+    #
+    [ ! -f "$SERVICE_IMAGE_LIST" ] \
+        && ( echo "File '$SERVICE_IMAGE_LIST' not found"; exit 1; )
+
+    for image in `grep -E -v "^$|#" $SERVICE_IMAGE_LIST`
     do
         echo "Getting image '$image'.."
         docker pull $image
@@ -20,49 +29,58 @@ function pull_notebook_images() {
 }
 
 function build_notebook_images() {
-    # Build images from file './imageslist' overwrite file 'config/imageslist'
-    # FILE_IN="${HERE}/imagelist"
-    # DOCKERFILE="${HERE}/dockerfiles/singleuser.dockerfile"
-    FILE_IN="./imagelist"
+    #
+    # Build images from file 'TOBUILD_IMAGE_LIST'.
+    # Overwrite file 'SERVICE_IMAGE_LIST'.
+    #
+    # Name of images in SERVICE_IMAGE_LIST will be that of
+    # TOBUILD_IMAGE_LIST without the (probable) user/org namespace prefix,
+    # eg, "jupyter/minimal-notebook" to "minimal-notebook"
+    #
+    [ ! -f "$TOBUILD_IMAGE_LIST" ] \
+        && ( echo "File '$TOBUILD_IMAGE_LIST' not found."; exit 1; )
+
     DOCKERFILE="./dockerfiles/singleuser.dockerfile"
     CONTEXT=`dirname $DOCKERFILE`
-    for src_image in `grep -E -v "^$|#" $FILE_IN`
+
+    for SRC_IMAGE in `grep -E -v "^$|#" $TOBUILD_IMAGE_LIST`
     do
-        dst_image="${src_image##*/}"
-        echo "Building image '$dst_image' (from '$src_image').."
-        docker build -t $dst_image --build-arg BASE_IMAGE="$src_image" \
+        DST_IMAGE="${SRC_IMAGE##*/}"
+        echo "Building image '$DST_IMAGE' (from '$SRC_IMAGE').."
+
+        docker build -t $DST_IMAGE \
+                    --build-arg BASE_IMAGE="$SRC_IMAGE" \
                      -f $DOCKERFILE $CONTEXT
-        [ $? ] && echo "..done" || echo "..failed"
+
+        [ $? ] \
+            && (echo "$DST_IMAGE" >> imagelist.tmp; echo "..done";) \
+            || echo "..failed"
     done
+
+    # Overwrite SERVICE_IMAGE_LIST with built image names
+    [ -f imagelist.tmp ] && mv imagelist.tmp $SERVICE_IMAGE_LIST
 }
 
-function build_jupyterhub_image() {
-    # Build jupyterhub image
-    # DOCKERFILE="${HERE}/dockerfiles/jupyterhub.dockerfile"
-    # CONTEXT=`dirname $DOCKERFILE`
-    # dst_image="jupyterhub"
-    # echo "Building '$dst_image' image.."
-    # docker build -t $dst_image -f $DOCKERFILE $CONTEXT
-    # [ $? ] && echo "..done" || echo "..failed"
-    docker compose -f compose.build.yml build jupyterhub
-}
+# function build_jupyterhub_image() {
+#     # Build jupyterhub image
+#     docker compose -f ../compose.yml build
+# }
 
-
-#!/bin/bash
 
 # Default values
 PULL_NOTEBOOK_IMAGES=false
 BUILD_NOTEBOOK_IMAGES=false
-BUILD_JUPYTERHUB_IMAGE=false
+# BUILD_JUPYTERHUB_IMAGE=false
 QUIET=false
 
 # Function to display script usage
 usage() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "  -p, --pull_notebook_images   Pull notebook images"
-    echo "  -b, --build_notebook_images  Build notebook images"
-    echo "  -j, --build_jupyterhub_image Build JupyterHub image"
+    echo "  -p, --pull_notebook_images   Pull notebook images in '$SERVICE_IMAGE_LIST'"
+    echo "  -b, --build_notebook_images  Build notebook images in '$TOBUILD_IMAGE_LIST'"
+    echo "                               Update 'config/imagelist' with new ones"
+    # echo "  -j, --build_jupyterhub_image Build JupyterHub image"
     echo "  -q, --quiet                  Suppress output from docker"
     echo "  -h, --help                   Display this help message"
     exit 1
@@ -76,15 +94,15 @@ fi
 # Parse command line options
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -p|--pull_notebook_images)
+        -p|--pull-notebook-images)
             PULL_NOTEBOOK_IMAGES=true
             ;;
-        -b|--build_notebook_images)
+        -b|--build-notebook-images)
             BUILD_NOTEBOOK_IMAGES=true
             ;;
-        -j|--build_jupyterhub_image)
-            BUILD_JUPYTERHUB_IMAGE=true
-            ;;
+        # -j|--build_jupyterhub_image)
+        #     BUILD_JUPYTERHUB_IMAGE=true
+        #     ;;
         -q|--quiet)
             QUIET=true
             ;;
@@ -101,16 +119,16 @@ done
 
 # Perform actions based on options
 if $PULL_NOTEBOOK_IMAGES; then
-    echo "Pulling notebook images..."
+    # echo "Pulling notebook images..."
     pull_notebook_images
 fi
 
 if $BUILD_NOTEBOOK_IMAGES; then
-    echo "Building notebook images..."
+    # echo "Building notebook images..."
     build_notebook_images
 fi
 
-if $BUILD_JUPYTERHUB_IMAGE; then
-    echo "Building JupyterHub image..."
-    build_jupyterhub_image
-fi
+# if $BUILD_JUPYTERHUB_IMAGE; then
+#     echo "Building JupyterHub image..."
+#     build_jupyterhub_image
+# fi

@@ -1,0 +1,53 @@
+version: "3"
+
+name: jupyterhub
+
+services:
+
+  jupyterhub:
+    image: ${JUPYTERHUB_IMAGE:?"Define JUPYTERHUB_IMAGE in .env file"}
+
+    build:
+      context: docker/dockerfiles/.
+      dockerfile: jupyterhub.dockerfile
+      args:
+        - JUPYTERHUB_VERSION = ${JUPYTERHUB_VERSION:-4}
+
+    volumes:
+      # Bind Docker socket on the host so we can connect to the daemon from
+      # within the container
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+
+      # The JupyterHub configuration files
+      - "./docker/config:/srv/jupyterhub"
+
+      # Bind Docker volume on host for JupyterHub database and cookie secrets
+      - "jupyterhub-data:/data"
+
+    env_file:
+      - .env.notebook
+
+    environment:
+      # All containers will join this network
+      DOCKER_NETWORK_NAME: jupyterhub-network
+
+    container_name: jupyterhub
+    restart: always
+    command: >
+      jupyterhub -f /srv/jupyterhub/jupyterhub_config.py
+
+    ports:
+      - "8000:8000"
+
+    networks:
+      - jupyterhub-network
+
+# Networks
+networks:
+  jupyterhub-network:
+    name: jupyterhub-network
+
+# Volumes
+volumes:
+  jupyterhub-data:
+    name: jupyterhub-data
